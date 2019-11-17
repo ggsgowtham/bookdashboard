@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Books DashBoard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="This page loads the DashBoard for books">
+    <meta name="author" content="Gowtham">
+    <meta http-equiv="Cache-control" content="public">
+    <meta name="google-signin-client_id" content="161207169085-40u4iv1851qtdpjro7smd906nrcomjj6.apps.googleusercontent.com">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
+    <link href="/styles/bootstrap.min.css" rel="stylesheet">
+    <link href="/styles/sticky-footer-navbar.css" rel="stylesheet">
+</head>
+
+<body>
+    <customHeader></customHeader>
+    <!-- Begin page content -->
+    <main role="main" class="main_container">
+        <h2 class="mt-5 text-center" style="padding-bottom: 10px;">Books List</h2>
+        <div class="container">
+            <div class="row">
+                <div class="col-8">
+                    <div class="album py-5 bg-light">
+                        <div class="container">
+                            <div class="row" id="mainTableBody">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <customFooter></customFooter>
+    <script src="https://apis.google.com/js/platform.js" sync></script>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/utlis.js"></script>
+    <script src="/js/misc.js"></script>
+    <script src="/js/dept.js"></script>
+</body>
+
+</html>

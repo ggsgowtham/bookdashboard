@@ -9,7 +9,7 @@ function onSignIn(googleUser) {
         type: "POST",
         dataType: "JSON",
         data: {
-            loginData: JSON.stringify({ name: profile.getEmail(), id: profile.getId(), status: "success" }),
+            loginData: JSON.stringify({ name: profile.getName(), id: profile.getEmail(), status: "success" }),
         },
         error: function(err) {
             $("#error").show();
@@ -32,7 +32,6 @@ function onSignIn(googleUser) {
         }
     });
 }
-
 
 $(window).on('beforeunload', function() {
     socket.close();

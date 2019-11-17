@@ -123,3 +123,14 @@ tr>td {
 .heartColor:active {
     background-color: red;
 }
+
+.abcRioButtonLightBlue {
+    height: 36px;
+    width: 200px !important;
+    left: 25% !important;
+}
+
+.madeFav {
+    background-color: red !important;
+    pointer-events: none;
+}

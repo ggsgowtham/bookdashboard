@@ -13,7 +13,8 @@ const mondodb = require('mongodb');
 const secretKey = "books";
 const mongoData = mondodb.MongoClient;
 const mongoUrl = "mongodb://booksdbAdmin:Admin123@ds031777.mlab.com:31777/booklistdb";
-let booksCollectionDb, usersCollectionDb, tempDb;
+let booksCollectionDb, usersCollectionDb, tempDb, LoggedInUsers = [],
+    userIdParams;
 //connecting to the database
 const client = new mongoData(mongoUrl, {
     useNewUrlParser: true,
@@ -109,12 +110,12 @@ app.get("/", function(req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
 
-//load department page
-//path - dept/:dept
-app.get("/dept/:userid", function(req, res) {
+//load userpage page
+app.get("/userpage/:userid", function(req, res) {
     console.log(req.params.userid);
-    deptParams = req.params.userid;
-    res.sendFile(__dirname + '/views/department.html');
+    userIdParams = req.params.userid;
+    fnGetUserDatabyEmail(userIdParams);
+    res.sendFile(__dirname + '/views/userpage.html');
 });
 
 app.get('*', function(req, res) {
@@ -127,7 +128,6 @@ app.post("/api/v1/login", function(req, res) {
     var oData = JSON.parse(req.body.loginData) || { username: "", password: "" };
     var uname = oData.name;
     var userId = oData.id;
-    console.log(oData);
 
     //create token here
     var token = jwt.sign({ username: uname }, secretKey);
@@ -171,7 +171,6 @@ io.on("connection", function(socket) {
     });
     //sending home page data 
     socket.on("getInitialBookData", function(oMessage) {
-        console.log(oMessage.oPage);
         var startIndex = oMessage.startIndex || 0;
         var requestText = oMessage.requestText || "";
         if (oMessage.oPage === "getInitialBookData") {
@@ -183,6 +182,27 @@ io.on("connection", function(socket) {
         } else if (oMessage.oPage === "getBooksbyIsbn") {
             fnGetAjaxData("getBooksbyIsbn", fnInitDataCb, requestText, startIndex);
         }
+    });
+
+    socket.on("makeFav", function(oMessage) {
+        var sQuery = "";
+        if (oMessage.oQuery === "isbn") {
+            sQuery = "isbn:" + oMessage.param;
+        } else {
+            sQuery = "intitle:" + oMessage.param;
+        }
+        fnSetFav(sQuery, oMessage.param, oMessage.id);
+    });
+    socket.on("getUserFavData", function(oMessage) {
+        var email = oMessage.id;
+        fnGetUserDatabyEmail(email);
+    });
+    if (userIdParams != "") {
+        fnGetUserDatabyEmail(userIdParams);
+    }
+    socket.on("getFavDataEmail", function(oMessage) {
+        var oQuery = oMessage.oData;
+        fnGetUserBooksData(oQuery, fnBuildUserDataCb);
     });
 
 });
@@ -215,7 +235,7 @@ function fnGetAjaxData(requestType, callback, requestText, startIndex) {
 
 function fnBuildRequest(reqType, callback, requestText, startIndex) {
     var googleBooksAPI = "/books/v1/volumes?q=";
-    var maxIndex = 10;
+    var maxIndex = 12;
     if (reqType === "getInitialBookData") {
         googleBooksAPI += "subject:" + requestText;
     } else if (reqType === "getBooksbyAuthor") {
@@ -230,31 +250,105 @@ function fnBuildRequest(reqType, callback, requestText, startIndex) {
 
     console.log(googleBooksAPI);
     return googleBooksAPI;
-
-
 }
 
 function fnInitDataCb(response, responseParams) {
     var bookData = [],
         jsonData = JSON.parse(response);
     oStatus = true;
-    console.log(response);
-
     for (var i = 0; i < jsonData.items.length; i++) {
-        var tempData;
-        console.log(jsonData.items[i].volumeInfo.industryIdentifiers)
+        var tempData, isbn = "";
+        if (jsonData.items[i].volumeInfo.industryIdentifiers) {
+            isbn = jsonData.items[i].volumeInfo.industryIdentifiers[0].identifier
+        }
         tempData = {
-            "title": jsonData.items[i].volumeInfo.title,
-            "publisher": jsonData.items[i].volumeInfo.authors.publisher,
-            "cat": jsonData.items[i].volumeInfo.categories,
-            "imgLink": jsonData.items[i].volumeInfo.imageLinks.thumbnail,
-            "extLink": jsonData.items[i].volumeInfo.previewLink,
-            "smallThumb": jsonData.items[i].volumeInfo.imageLinks.smallThumbnail
-                //,
-                //"bookISBN": JSON.parse(jsonData.items[i].volumeInfo.industryIdentifiers)[0].identifier
+            "title": jsonData.items[i].volumeInfo.title || "",
+            "publisher": jsonData.items[i].volumeInfo.authors.publisher || "",
+            "cat": jsonData.items[i].volumeInfo.categories || "",
+            "imgLink": jsonData.items[i].volumeInfo.imageLinks.thumbnail || "",
+            "extLink": jsonData.items[i].volumeInfo.previewLink || "",
+            "smallThumb": jsonData.items[i].volumeInfo.imageLinks.smallThumbnail || "",
+            "bookISBN": isbn
 
         }
         bookData.push(tempData);
     }
     io.sockets.emit('receiveTableData', { oData: JSON.stringify(bookData), status: oStatus });
+}
+
+function fnGetUserDatabyEmail(userEmail) {
+    usersCollectionDb.find({
+        'uId': userEmail
+    }).toArray(function(err, results) {
+        var favId = [];
+        for (var i = 0; i < results.length; i++) {
+            favId.push({ oData: results[i].oData, oQuery: results[i].query, uId: userEmail });
+        }
+        io.sockets.emit('sendFavData', { oData: JSON.stringify(favId) });
+    });
+}
+
+function fnSetFav(oQuery, oData, uId) {
+    var insertData = {
+        "query": oQuery,
+        "oData": oData,
+        "uId": uId
+    }
+    usersCollectionDb.insertOne(insertData, (err, result) => {
+        if (err) return console.log(err);
+        else {
+            console.log('saved to database');
+            io.sockets.emit('favSet', { status: oStatus, oId: oData });
+        }
+    });
+}
+
+function fnGetUserBooksData(query, callback) {
+    query = query || ""
+    if (query.indexOf("isbn") !== -1) {
+        var ajaxRequest = https.request({
+            host: "www.googleapis.com",
+            port: 443,
+            path: "/books/v1/volumes?q=" + query,
+            method: "GET",
+        }, function(resp) {
+            var str = "";
+            resp.on('data', function(data) {
+                str += data;
+            });
+            resp.on('end', function() {
+                callback(str);
+            });
+            resp.on('error', function(err) {
+                console.log("API request error: ", err);
+            });
+        });
+        ajaxRequest.on('error', function(e) {
+            console.log("problem with request" + e);
+        });
+        ajaxRequest.end();
+    }
+}
+
+function fnBuildUserDataCb(response) {
+    var bookData = [],
+        i = 0,
+        jsonData = JSON.parse(response);
+    oStatus = true;
+    var tempData, isbn = "";
+    if (jsonData.items[i].volumeInfo.industryIdentifiers) {
+        isbn = jsonData.items[i].volumeInfo.industryIdentifiers[0].identifier
+    }
+    tempData = {
+        "title": jsonData.items[i].volumeInfo.title || "",
+        "publisher": jsonData.items[i].volumeInfo.authors.publisher || "",
+        "cat": jsonData.items[i].volumeInfo.categories || "",
+        "imgLink": jsonData.items[i].volumeInfo.imageLinks.thumbnail || "",
+        "extLink": jsonData.items[i].volumeInfo.previewLink || "",
+        "smallThumb": jsonData.items[i].volumeInfo.imageLinks.smallThumbnail || "",
+        "bookISBN": isbn
+
+    }
+    bookData.push(tempData);
+    io.sockets.emit('sentUserData', { status: oStatus, oId: tempData });
 }

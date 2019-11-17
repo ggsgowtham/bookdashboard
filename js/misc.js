@@ -6,6 +6,10 @@ var socket = io('', {
 var oIntervalTimeOut = 5000;
 
 function fnLogout() {
+    var auth2 = gapi.auth2.getAuthInstance();
+    auth2.signOut().then(function() {
+        console.log('User signed out.');
+    });
     var objCK = new fnCookie();
     objCK._deleteCookie("login");
     objCK._deleteCookie("login_name");
@@ -22,6 +26,11 @@ $(document).ready(function() {
             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
         });
     });
+    setTimeout(function() {
+        gapi.load('auth2', function() {
+            gapi.auth2.init();
+        });
+    }, 500);
 });
 
 function fnVerifyUser() {
