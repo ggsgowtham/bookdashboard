@@ -1,0 +1,125 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 60px;
+    line-height: 60px;
+    /* Vertically center the text there */
+    background-color: #000000;
+}
+
+
+/* Custom page CSS
+-------------------------------------------------- */
+
+
+/* Not required for template or sticky footer method. */
+
+.main_container {
+    padding: 60px 15px 0;
+}
+
+.footer_container {
+    float: right;
+    margin-right: 10px;
+}
+
+code {
+    font-size: 80%;
+}
+
+
+/* custom colors */
+
+body {
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 0;
+    overflow-x: hidden;
+    color: #000000;
+    margin-bottom: 60px;
+}
+
+body>.container {
+    padding: 60px 15px 0;
+}
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    background-color: #eeeeee;
+    cursor: pointer;
+}
+
+.initials {
+    position: relative;
+    font-size: 1rem;
+    line-height: 50px;
+    color: #000;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.popover {
+    max-width: 600px;
+    width: auto;
+}
+
+@media only screen and (max-width: 600px) {
+    .popover {
+        max-width: 300px;
+        width: auto;
+    }
+}
+
+thead {
+    background-color: #034ea2;
+    color: #fff;
+    font-size: 12px;
+}
+
+tr>td {
+    width: 10%;
+}
+
+
+/* Loading the magnifier in the filter input */
+
+.has-search .form-control {
+    padding-left: 2.375rem;
+}
+
+.has-search .form-control-feedback {
+    position: absolute;
+    z-index: 2;
+    display: block;
+    width: 2.375rem;
+    height: 2.375rem;
+    line-height: 2.375rem;
+    text-align: center;
+    pointer-events: none;
+    color: #aaa;
+}
+
+.heartColor:hover,
+.heartColor:active {
+    background-color: red;
+}

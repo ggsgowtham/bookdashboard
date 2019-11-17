@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Books DashBoard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="This page loads the DashBoard for books">
+    <meta name="author" content="Gowtham">
+    <meta http-equiv="Cache-control" content="public">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
+    <link href="/styles/bootstrap.min.css" rel="stylesheet">
+    <link href="/styles/sticky-footer-navbar.css" rel="stylesheet">
+</head>
+
+<body>
+    <customHeader></customHeader>
+    </header>
+    <!-- Begin page content -->
+    <main role="main" class="main_container">
+        <h2 class="mt-5 text-center" style="padding-bottom: 10px;">Wipro DashBoard - {{Department}} Data</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{Department}}</li>
+            </ol>
+        </nav>
+        <div style="float:right;padding: 5px;">
+            <form class="form-inline mt-2 mt-md-0 has-search" style="flaot:left;">
+                <span class="fa fa-search form-control-feedback"></span>
+                <input class="form-control mr-sm-2" type="text" title="filter table data" id="deptTableData" placeholder="Filter" aria-label="Filter">
+            </form>
+            <div id="capture" title="Take ScreenShot" class="btnTblActions" style="color:darkred"><i class="fas fa-camera-retro fa-2x"></i></div>
+            <div id="sendMail" title="Send Mail" class="btnTblActions" style="color:darkblue;"><i class="fas fa-envelope-open fa-2x"></i></div>
+            <div id="exportCSV" title="Export CSV" class="btnTblActions" onClick="fnExportTableToCSV('DashBoard.csv');" style="color: green;"><i class="fas fa-file-download fa-2x"></i></div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered ">
+                <thead class="thead">
+                    <tr>
+                        <th scope="col" style="width: 2%;">#</th>
+                        <th scope="col" title="Department Name">Department Name</th>
+                        <th scope="col" title="Team Lead">Team Lead</th>
+                        <th scope="col" title="Engineer Name in Department">Dept. Engineer Name</th>
+                        <th scope="col" title="Total Chats Handled(No of Chats answered + active + closed), ">Total Chats Handled</th>
+                        <th scope="col" title="Average Chat Time">AHT/ACT</th>
+                        <th scope="col" title="Unanswered Chats(assigned)">Unanswered Chats(assigned)</th>
+                        <th scope="col" title="Reassign Count(from other to him and him to other)">Reassign Count</th>
+                        <th scope="col" title="Current Concurrent Chats(Number of chats currently active)">Current Concurrent Chats</th>
+                        <th scope="col" title="Status Change Count">Status Change Count</th>
+                        <th scope="col" title="Current Status">Current Status</th>
+                        <th scope="col" title="Time Spent in Current Status">Time Spent in Current Status</th>
+                    </tr>
+                </thead>
+                <tbody id="deptTableBody" style="font-family: serif;font-size: 15px;">
+
+                </tbody>
+            </table>
+            <div class="float-right">
+                <label class="text-muted">Last Refreshed: <span id="refreshTimeDept"  style="color:coral;"></span></label>
+            </div>
+        </div>
+    </main>
+    <customFooter></customFooter>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/htmlcanvas.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/utlis.js"></script>
+    <script src="/js/misc.js"></script>
+    <script src="/js/dept.js"></script>
+    <script type="text/javascript">
+        html2canvas(document.querySelector(".table")).then(canvas => {
+            $("#screenShot").append(canvas).append('<span class="text-muted">*Please right click to save the screenshot</span>');
+            $('.informationModal').on('show', function() {
+                $('.modal-body', this).css({
+                    width: 'auto',
+                    height: 'auto',
+                    'max-height': '100%'
+                });
+                $('.modal-dialog', this).css({
+                    'max-width': '100%'
+                });
+            });
+        });
+
+        $("#capture").on("click", function() {
+            $(".informationModal").modal(true);
+        });
+    </script>
+</body>
+
+</html>
